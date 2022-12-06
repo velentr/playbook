@@ -10,14 +10,29 @@ from playbook import Playbook, Transition
 
 
 @dataclasses.dataclass
-class WaitToProceed(Playbook):
+class AcceptUserInput(Playbook):
+    """Please enter the required information to proceed."""
+
+    prompt: str = "> "
+
+    def do_run(self) -> Transition:
+        """Prompt the user for input before continuing."""
+        response = input(self.prompt)
+        return self.accept(response)
+
+    def accept(self, response: str) -> Transition:
+        """Handle the user's input string before transitioning."""
+        raise NotImplementedError()
+
+
+@dataclasses.dataclass
+class WaitToProceed(AcceptUserInput):
     """Pausing until you wish to continue."""
 
     prompt: str = "continue? (y|n) "
 
-    def do_run(self) -> Transition:
+    def accept(self, response: str) -> Transition:
         """Prompt the user to continue."""
-        response = input(self.prompt)
         if response == "y":
             return Transition.CONTINUE
         if response == "n":
