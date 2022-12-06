@@ -43,7 +43,7 @@ class Playbook:
             sys.exit(1)
 
     @classmethod
-    def serial(cls, doc: str, playbooks: T.List[Playbook]) -> Playbook:
+    def serial(cls, doc: str, playbooks: T.List[Playbook]) -> T.Type[Playbook]:
         """Build a new playbook that runs the specified playbooks in series."""
 
         class SerialPlaybook(Playbook):
@@ -56,7 +56,7 @@ class Playbook:
 
         SerialPlaybook.__doc__ = doc
 
-        return SerialPlaybook()
+        return SerialPlaybook
 
 
 def main() -> None:
