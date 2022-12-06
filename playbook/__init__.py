@@ -43,16 +43,18 @@ class Playbook:
             sys.exit(1)
 
     @classmethod
-    def serial(cls, playbooks: T.List[Playbook]) -> Playbook:
+    def serial(cls, doc: str, playbooks: T.List[Playbook]) -> Playbook:
         """Build a new playbook that runs the specified playbooks in series."""
 
         class SerialPlaybook(Playbook):
-            """Run a list of playbooks in series."""
+            """Default docstring to pass the linter."""
 
             def do_run(self) -> Transition:
                 for playbook in playbooks:
                     playbook.run()
                 return Transition.CONTINUE
+
+        SerialPlaybook.__doc__ = doc
 
         return SerialPlaybook()
 
