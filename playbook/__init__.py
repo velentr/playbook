@@ -10,6 +10,7 @@ import argparse
 import enum
 import importlib
 import sys
+import textwrap
 import typing as T
 
 
@@ -24,13 +25,29 @@ class Transition(enum.Enum):
 class Playbook:
     """A single repetitive task that must be accomplished."""
 
+    wrapper = textwrap.TextWrapper()
+
     def do_run(self) -> Transition:
         """Run this playbook."""
         raise NotImplementedError()
 
+    def _print_docstring(self) -> None:
+        if self.__doc__ is None:
+            return
+
+        lines = self.__doc__.split("\n\n")
+        paragraphs = [
+            self.wrapper.wrap(textwrap.dedent(line)) for line in lines
+        ]
+        print()
+        for paragraph in paragraphs:
+            for line in paragraph:
+                print(line)
+            print()
+
     def run(self) -> None:
         """Run a playbook."""
-        print(self.__doc__)
+        self._print_docstring()
         result = self.do_run()
         if result == Transition.CONTINUE:
             return
