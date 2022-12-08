@@ -7,11 +7,21 @@
 from __future__ import annotations
 
 import argparse
+import atexit
 import enum
 import importlib
+import os
+import readline
 import sys
 import textwrap
 import typing as T
+
+
+PLAYBOOK_HISTORY_PATH = os.path.expanduser("~/.playbook_history")
+if os.path.exists(PLAYBOOK_HISTORY_PATH):
+    readline.read_history_file(PLAYBOOK_HISTORY_PATH)
+readline.set_history_length(256)
+atexit.register(readline.write_history_file, PLAYBOOK_HISTORY_PATH)
 
 
 class Transition(enum.Enum):
