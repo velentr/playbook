@@ -71,14 +71,20 @@ class Playbook:
 
         result = self.do_run()
         if result == Transition.CONTINUE:
-            return
-        if result == Transition.RETRY:
+            pass
+        elif result == Transition.RETRY:
             print(f"re-trying {self.__class__.__name__}...")
             self.run()
         else:
             # the playbook either returned HALT or some unknown value
             print(f"cannot continue after {self.__class__.__name__}; exiting")
             sys.exit(1)
+
+        self.cleanup()
+
+    def cleanup(self) -> None:
+        """Clean up code run in prepare()."""
+        self._maybe_run_method("do_cleanup")
 
     @classmethod
     def serial(cls, doc: str, playbooks: T.List[Playbook]) -> T.Type[Playbook]:
