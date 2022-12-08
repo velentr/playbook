@@ -55,9 +55,20 @@ class Playbook:
                 print(line)
             print()
 
+    def _maybe_run_method(self, method_name: str) -> None:
+        if hasattr(self, method_name) and callable(getattr(self, method_name)):
+            getattr(self, method_name)()
+
+    def prepare(self) -> None:
+        """Prepare to run a playbook."""
+        self._maybe_run_method("do_prepare")
+
     def run(self) -> None:
         """Run a playbook."""
+        self.prepare()
+
         self._print_docstring()
+
         result = self.do_run()
         if result == Transition.CONTINUE:
             return
