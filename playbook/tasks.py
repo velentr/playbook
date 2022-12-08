@@ -17,7 +17,11 @@ class AcceptUserInput(Playbook):
 
     def do_run(self) -> Transition:
         """Prompt the user for input before continuing."""
-        response = input(self.prompt)
+        try:
+            response = input(self.prompt)
+        except EOFError:
+            print("\n\nno input provided")
+            return Transition.HALT
         return self.accept(response)
 
     def accept(self, response: str) -> Transition:
