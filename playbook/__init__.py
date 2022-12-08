@@ -21,6 +21,7 @@ PLAYBOOK_HISTORY_PATH = os.path.expanduser("~/.playbook_history")
 if os.path.exists(PLAYBOOK_HISTORY_PATH):
     readline.read_history_file(PLAYBOOK_HISTORY_PATH)
 readline.set_history_length(256)
+readline.parse_and_bind("tab: complete")
 atexit.register(readline.write_history_file, PLAYBOOK_HISTORY_PATH)
 
 
