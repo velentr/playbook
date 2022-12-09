@@ -36,7 +36,12 @@ class Transition(enum.Enum):
 class Playbook:
     """A single repetitive task that must be accomplished."""
 
-    wrapper = textwrap.TextWrapper()
+    title_wrapper = textwrap.TextWrapper(
+        initial_indent="│ ", subsequent_indent="  "
+    )
+    body_wrapper = textwrap.TextWrapper(
+        initial_indent="  ", subsequent_indent="  "
+    )
 
     def do_run(self) -> Transition:
         """Run this playbook."""
@@ -46,15 +51,15 @@ class Playbook:
         if self.__doc__ is None:
             return
 
-        lines = self.__doc__.split("\n\n")
         paragraphs = [
-            self.wrapper.wrap(textwrap.dedent(line)) for line in lines
+            textwrap.dedent(line) for line in self.__doc__.split("\n\n")
         ]
-        print()
-        for paragraph in paragraphs:
-            for line in paragraph:
-                print(line)
-            print()
+        title = "\n".join(self.title_wrapper.wrap(paragraphs[0]))
+        body = "\n\n".join(
+            "\n".join(self.body_wrapper.wrap(paragraph))
+            for paragraph in paragraphs[1:]
+        )
+        print(f"┌───────────────\n{title}\n\n{body}\n")
 
     def _maybe_run_method(self, method_name: str) -> None:
         if hasattr(self, method_name) and callable(getattr(self, method_name)):
