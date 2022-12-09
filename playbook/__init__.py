@@ -16,6 +16,8 @@ import sys
 import textwrap
 import typing as T
 
+import rich
+
 
 PLAYBOOK_HISTORY_PATH = os.path.expanduser("~/.playbook_history")
 if os.path.exists(PLAYBOOK_HISTORY_PATH):
@@ -37,7 +39,7 @@ class Playbook:
     """A single repetitive task that must be accomplished."""
 
     title_wrapper = textwrap.TextWrapper(
-        initial_indent="│ ", subsequent_indent="  "
+        initial_indent="[green]│[/green] ", subsequent_indent="  "
     )
     body_wrapper = textwrap.TextWrapper(
         initial_indent="  ", subsequent_indent="  "
@@ -59,7 +61,7 @@ class Playbook:
             "\n".join(self.body_wrapper.wrap(paragraph))
             for paragraph in paragraphs[1:]
         )
-        print(f"┌───────────────\n{title}\n\n{body}\n")
+        rich.print(f"[green]┌───────────────[/green]\n{title}\n\n{body}\n")
 
     def _maybe_run_method(self, method_name: str) -> None:
         if hasattr(self, method_name) and callable(getattr(self, method_name)):
@@ -79,11 +81,13 @@ class Playbook:
         if result == Transition.CONTINUE:
             pass
         elif result == Transition.RETRY:
-            print(f"re-trying {self.__class__.__name__}...")
+            rich.print(f"re-trying {self.__class__.__name__}...")
             self.run()
         else:
             # the playbook either returned HALT or some unknown value
-            print(f"cannot continue after {self.__class__.__name__}; exiting")
+            rich.print(
+                f"cannot continue after {self.__class__.__name__}; exiting"
+            )
             sys.exit(1)
 
         self.cleanup()
@@ -129,8 +133,10 @@ def main() -> None:
     (module, _, cls) = args.PLAYBOOK.rpartition(".")
     playbook = importlib.import_module(module).__dict__.get(cls, object)
     if not issubclass(playbook, Playbook):
-        print(f"The expression {args.PLAYBOOK} doesn't evaluate to a playbook.")
-        print("Cannot continue; exiting.")
+        rich.print(
+            f"The expression {args.PLAYBOOK} doesn't evaluate to a playbook."
+        )
+        rich.print("Cannot continue; exiting.")
         sys.exit(1)
 
     playbook().run()
