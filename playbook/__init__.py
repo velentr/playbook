@@ -61,7 +61,9 @@ class Playbook:
             "\n".join(self.body_wrapper.wrap(paragraph))
             for paragraph in paragraphs[1:]
         )
-        rich.print(f"[green]┌───────────────[/green]\n{title}\n\n{body}\n")
+        rich.print(f"[green]┌───────────────[/green]\n{title}\n")
+        if body:
+            rich.print(f"\n{body}\n")
 
     def _maybe_run_method(self, method_name: str) -> None:
         if hasattr(self, method_name) and callable(getattr(self, method_name)):
