@@ -97,18 +97,15 @@ class Playbook:
         self._maybe_run_method("do_cleanup")
 
     @classmethod
-    def serial(cls, doc: str, playbooks: T.List[Playbook]) -> T.Type[Playbook]:
+    def serial(cls, playbooks: T.List[Playbook]) -> T.Type[Playbook]:
         """Build a new playbook that runs the specified playbooks in series."""
 
         class SerialPlaybook(Playbook):
-            """Default docstring to pass the linter."""
-
+            # pylint: disable=missing-class-docstring
             def do_run(self) -> Transition:
                 for playbook in playbooks:
                     playbook.run()
                 return Transition.CONTINUE
-
-        SerialPlaybook.__doc__ = doc
 
         return SerialPlaybook
 
