@@ -5,6 +5,9 @@
 """Various pre-set tasks for a playbook."""
 
 import dataclasses
+import glob
+import os
+import pathlib
 import readline
 import typing as T
 
@@ -70,4 +73,59 @@ class WaitToProceed(AcceptUserInput):
     @classmethod
     def do_cleanup(cls) -> None:
         """Remove y/n tab completion."""
+        readline.set_completer(None)
+
+
+@dataclasses.dataclass
+class AcceptPathInput(AcceptUserInput):
+    """Please enter a valid path."""
+
+    prompt: str = "> "
+
+    last_glob: T.Optional[str] = None
+    cached_expansion: T.Optional[T.List[str]] = None
+
+    # These need to be cached so they can be reloaded later.
+    old_delims: T.Optional[str] = None
+
+    def _complete_path(self, text: str, state: int) -> T.Optional[str]:
+        """Completion function for completing paths using globs."""
+        if text != self.last_glob:
+            expansion = glob.glob(os.path.expanduser(text) + "*")
+            # Did we do $HOME expansion?
+            if len(expansion) > 0 and not expansion[0].startswith(text):
+                # If so, replace $HOME with ~/ so that expansions match the text
+                # already input by the user.
+                home = os.path.expanduser("~/")
+                expansion = ["~/" + s.removeprefix(home) for s in expansion]
+            self.cached_expansion = expansion
+            self.last_glob = text
+
+        assert self.cached_expansion is not None
+        if state >= len(self.cached_expansion):
+            return None
+
+        return self.cached_expansion[state]
+
+    def do_prepare(self) -> None:
+        """Set up tab completion for completing paths."""
+        self.old_delims = readline.get_completer_delims()
+        readline.set_completer_delims("\t\n")
+        readline.set_completer(self._complete_path)
+
+    def accept(self, response: str) -> Transition:
+        """Accept the raw input string from the user and convert to a path."""
+        response_path = pathlib.Path(os.path.expanduser(response))
+        if not response_path.exists():
+            raise RuntimeError(f"Path {response} does not exist!")
+        return self.accept_path(response_path)
+
+    def accept_path(self, response: pathlib.Path) -> Transition:
+        """Handle the user's response path before transitioning."""
+        raise NotImplementedError()
+
+    def do_cleanup(self) -> None:
+        """Remove path tab completion."""
+        assert self.old_delims is not None
+        readline.set_completer_delims(self.old_delims)
         readline.set_completer(None)
